@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form>
+        <label for="fileInput">Upload</label>
+        <input id="fileInput" type="file">
+        <button type="button" id="upload">
+            Upload
+        </button>
+    </form>
+</body>
+<script>
+    const input = document.querySelector("#fileInput")
+    const button = document.querySelector("#upload")
+    button.addEventListener('click', e=> {
+        const form = new FormData()
+        form.append("file", input.files[0])
+
+        fetch(`/prod/upload`,{
+            // headers: {
+            //     'Accept': 'application/json, application/xml, text/plain, text/html, *.*',
+            //     'Content-Type': 'multipart/form-data'
+            // },
+            method:"POST",
+            body:form
+        })
+    })
+</script>
+</html>
