@@ -8,8 +8,10 @@
 </head>
 <body>
     <form>
-        <label for="fileInput">Upload</label>
+        <label for="fileInput">File</label>
         <input id="fileInput" type="file">
+        <label for="keyInput">Key</label>
+        <input id="keyInput" type="text">
         <button type="button" id="upload">
             Upload
         </button>
@@ -17,19 +19,25 @@
 </body>
 <script>
     const input = document.querySelector("#fileInput")
+    const keyInput = document.querySelector("#keyInput")
     const button = document.querySelector("#upload")
-    button.addEventListener('click', e=> {
-        const form = new FormData()
-        form.append("file", input.files[0])
-
-        fetch(`/prod/upload`,{
-            // headers: {
-            //     'Accept': 'application/json, application/xml, text/plain, text/html, *.*',
-            //     'Content-Type': 'multipart/form-data'
-            // },
-            method:"POST",
-            body:form
-        })
+    button.addEventListener('click', e => {
+        const body = {}
+        const fileReader = new FileReader()
+        fileReader.readAsDataURL(input.files[0])
+        fileReader.onload = () => {
+            body.file = fileReader.result
+            body.key = keyInput.value
+            console.log(body)
+            fetch(`/prod/upload`,
+            {
+                method:"POST",
+                headers: {
+                    'Content-Type': 'application/json' 
+                },
+                body:JSON.stringify(body)
+            })
+        }
     })
 </script>
 </html>

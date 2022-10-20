@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from '../lib/test-stack';
+import { POCStack } from '../lib/test-stack';
+import { AWS_ACCOUNT_ID, AWS_REGION } from '../constants';
 
 const app = new cdk.App();
-new TestStack(app, 'TestStack', {
+new POCStack(app, 'POCStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
 
   /* Uncomment the next line to specialize this stack for the AWS Account
    * and Region that are implied by the current CLI configuration. */
-  env: { account: '228733100300', region: 'ap-south-1' },
+  env: { account: AWS_ACCOUNT_ID, region: AWS_REGION },
 
   /* Uncomment the next line if you know exactly what Account and Region you
    * want to deploy the stack to. */
