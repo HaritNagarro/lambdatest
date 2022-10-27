@@ -11,12 +11,9 @@ import { join as pathJoin, relative } from "path";
 import { getPreBucketName, TABLE_NAME, TABLE_PK } from "../constants";
 import { GenericTable } from "../infrastructure/generic-table";
 import { SnsDestination } from "aws-cdk-lib/aws-s3-notifications";
-import {
-  SqsEventSource,
-  ApiEventSource,
-} from "aws-cdk-lib/aws-lambda-event-sources";
+import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { ServerlessClamscan } from "cdk-serverless-clamscan";
-import { SQS } from "aws-sdk";
+import { LambdaDestination } from "aws-cdk-lib/aws-lambda-destinations";
 
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
@@ -50,8 +47,15 @@ export class POCStack extends cdk.Stack {
       bucketName: getPreBucketName(),
     });
 
+    this.sqs = new sqs.Queue(this, "firstSQS", {
+      // fifo:true
+    });
+
     this.clamAV = new ServerlessClamscan(this, "clamScan", {
       buckets: [this.bucket],
+      onResult: new LambdaDestination(this.consoleLambda),
+      onError: new LambdaDestination(this.consoleLambda),
+      scanFunctionMemorySize: 3008,
     });
 
     // create aws bucket
@@ -119,35 +123,19 @@ export class POCStack extends cdk.Stack {
       // fifo:true
     });
 
-    this.sqs = new sqs.Queue(this, "firstSQS", {
-      // fifo:true
-    });
+    // this.bucket.addEventNotification(
+    //   s3.EventType.OBJECT_CREATED,
+    //   new SnsDestination(this.preBucketUploadTopic)
+    // );
 
-    this.bucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED,
-      new SnsDestination(this.preBucketUploadTopic)
-    );
+    // this.preBucketUploadTopic.addSubscription(
+    //   new subscription.SqsSubscription(this.sqs)
+    // );
 
-    this.preBucketUploadTopic.addSubscription(
-      new subscription.SqsSubscription(this.sqs)
-    );
+    // this.preBucketUploadTopic.addSubscription(
+    //   new subscription.LambdaSubscription(this.consoleLambda)
+    // );
 
-    this.preBucketUploadTopic.addSubscription(
-      new subscription.LambdaSubscription(this.consoleLambda)
-    );
-
-    this.consoleLambda.addEventSource(new SqsEventSource(this.sqs));
-
-    // this.bucket.addObjectCreatedNotification()
-
-    // this.firstLambda.addToRolePolicy()
-    // const lambdaNodeFileIntegration = this.firstLambda
-
-    // expose first lambda to public
-    // const firstLambdaAsIntegration = new LambdaIntegration(firstLambda)
-
-    // const firstLambdaAsIntegration = new LambdaIntegration(lambdaNodeFileIntegration)
-    // const uploadPathResource = this.api.root.addResource("upload")
-    // uploadPathResource.addMethod("any",firstLambdaAsIntegration)
+    // this.consoleLambda.addEventSource(new SqsEventSource(this.sqs));
   }
 }
